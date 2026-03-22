@@ -1,0 +1,324 @@
+import { useState, useRef, useEffect } from "react";
+
+const COLORS = { consultas:"#185FA5", escritos:"#0F6E56", conflictos:"#BA7517", criterio:"#7C3AED", archivos:"#533AB7", equipo:"#3B6D11", estudiantes:"#993C1D" };
+
+const TABS = [
+  { id:"consultas",   label:"Consultas",  icon:"💬" },
+  { id:"escritos",    label:"Escritos",   icon:"📝" },
+  { id:"conflictos",  label:"Conflictos", icon:"⚠️" },
+  { id:"criterio",    label:"Criterio",   icon:"⚖️" },
+  { id:"archivos",    label:"Archivos",   icon:"📎" },
+  { id:"equipo",      label:"Equipo",     icon:"👥" },
+  { id:"estudiantes", label:"Alumnos",    icon:"🎒" },
+];
+
+const ROLES = [
+  {id:"director",label:"Director/a"},{id:"vice",label:"Vicedirector/a"},
+  {id:"secretaria",label:"Secretaría"},{id:"jefe",label:"Jefe Preceptores"},
+  {id:"preceptor",label:"Preceptor/a"},{id:"eoe",label:"EOE"},
+  {id:"cite",label:"CITE"},{id:"edte",label:"EDTE"},
+  {id:"auxiliar",label:"Auxiliar"},{id:"docente",label:"Docente"},
+  {id:"cooperadora",label:"Cooperadora"},
+];
+
+const BASE = `Sos un asistente de conducción escolar para escuelas secundarias de la provincia de Buenos Aires. Respondés desde CORRESPONSABILIDAD. Solo respondés cuando tenés certeza basada en normativa DGCyE. Si no sabés, decís que no sabés. Español rioplatense, directo.
+
+CITE = COORDINADOR INSTITUCIONAL DE TRAYECTORIAS EDUCATIVAS (Res.1884/25). Cargo docente individual, 22,5hs, provisional 3 ciclos. NO órgano colegiado. NO puede ser CITE un miembro de conducción.
+EDTE = Equipo de Definición de Trayectorias (Res.1650/24 Anexo 2). Órgano colegiado. Estudiantes con más de 4 materias pendientes.
+RITE: estados TEA (aprobó), TEP (en proceso), TED (desvinculado).
+AUXILIARES: organismo competente = CONSEJO ESCOLAR (no SAD). Disciplina = LEVE PROBANZA.
+Nota mínima: 7. Cuatrimestres NO se promedian.`;
+
+const PROMPTS = {
+  consultas:   BASE,
+  escritos:    BASE + "\nGenerás documentos completos: actas, notas a inspección, circulares, comunicaciones. Formato DGCyE.",
+  conflictos:  BASE + "\nEstructura: 1-CORRESPONSABILIDAD 2-ENCUADRE NORMATIVO 3-PASOS 4-DOCUMENTACIÓN 5-ALERTAS.",
+  criterio:    BASE + "\nAnalizás dilemas éticos y decisiones difíciles de conducción. Marco: autoridad pedagógica democrática, corresponsabilidad, derecho irrenunciable a la educación.",
+  archivos:    BASE + "\nAnalizás documentos, actas, fotos. Revisás errores, identificás normativa, sugerís mejoras.",
+  equipo:      BASE + "\nRoles: Director/a, Vicedirector/a, Secretaría, Jefe Preceptores, EOE, CITE (Res.1884/25), EDTE, Auxiliares (CONSEJO ESCOLAR - LEVE PROBANZA), Cooperadora.",
+  estudiantes: BASE + "\nTrayectorias RITE, FORTE/CITE, AIC, Centro Estudiantes (Ley 14581/26877), ESI, mapa riesgo.",
+};
+
+const STARTERS = {
+  consultas:   ["¿Cuáles son los estados administrativos obligatorios?","¿Qué es el CITE?","¿Cómo funciona la intensificación?"],
+  escritos:    ["Generá un Proyecto de Supervisión del Director/a","Generá un Plan de Prevención de Riesgo","Nota formal a Inspección sobre ausentismo docente"],
+  conflictos:  ["Video de un alumno se viralizó en redes","Docente no cumple sus funciones","Conflicto entre familias y preceptora"],
+  criterio:    ["¿Cómo actúo ante un docente que no acepta una indicación?","Un padre amenaza con ir a la prensa. ¿Qué hago?","¿Cuándo corresponde no abrir un acto público?"],
+  archivos:    ["Subí un acta para revisar","Analizá este documento","Corregí errores normativos en este texto"],
+  equipo:      ["¿Cómo instruyo una leve probanza?","¿Qué hace el EDTE?","Funciones del jefe de preceptores"],
+  estudiantes: ["¿Qué pasa si un alumno llega a TED?","Derechos del Centro de Estudiantes","Alumno con conductas autolesivas"],
+};
+
+function Dots() {
+  return (
+    <div style={{display:"flex",gap:4,padding:"10px 14px",background:"#f2f4f7",borderRadius:14,alignSelf:"flex-start"}}>
+      {[0,1,2].map(i=>(
+        <div key={i} style={{width:7,height:7,borderRadius:"50%",background:"#999",
+          animation:`bounce 1.2s ${i*0.2}s infinite ease-in-out`}}/>
+      ))}
+      <style>{`@keyframes bounce{0%,80%,100%{transform:scale(.8);opacity:.4}40%{transform:scale(1.2);opacity:1}}`}</style>
+    </div>
+  );
+}
+
+export default function App() {
+  const [tab, setTab]         = useState("consultas");
+  const [screen, setScreen]   = useState("chat");
+  const [chats, setChats]     = useState({consultas:[],escritos:[],conflictos:[],criterio:[],archivos:[],equipo:[],estudiantes:[]});
+  const [input, setInput]     = useState("");
+  const [loading, setLoading] = useState(false);
+  const [imgPrev, setImgPrev] = useState(null);
+  const [imgData, setImgData] = useState(null);
+  const [attached, setAttached] = useState(null);
+  const [logo, setLogo]       = useState(null);
+  const [school, setSchool]   = useState("");
+  const [role, setRole]       = useState(null);
+
+  const bottomRef = useRef(null);
+  const camRef    = useRef(null);
+  const attRef    = useRef(null);
+  const logoRef   = useRef(null);
+  const txtRef    = useRef(null);
+
+  const msgs = chats[tab];
+  const ac   = COLORS[tab];
+
+  useEffect(()=>{ bottomRef.current?.scrollIntoView({behavior:"smooth"}); },[msgs,loading]);
+
+  const handleImg = e => {
+    const f=e.target.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=ev=>{ setImgData(ev.target.result.split(",")[1]); setImgPrev(ev.target.result); };
+    r.readAsDataURL(f); e.target.value="";
+  };
+
+  const handleAttach = e => {
+    const f=e.target.files[0]; if(!f) return;
+    const r=new FileReader();
+    const isImg=f.type.startsWith("image/");
+    r.onload=ev=>setAttached({data:ev.target.result.split(",")[1],type:isImg?"image":f.type==="application/pdf"?"pdf":"text",name:f.name,prev:isImg?ev.target.result:null,mime:f.type});
+    r.readAsDataURL(f); e.target.value="";
+  };
+
+  const handleLogo = e => {
+    const f=e.target.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=ev=>setLogo(ev.target.result);
+    r.readAsDataURL(f); e.target.value="";
+  };
+
+  const send = async () => {
+    const txt=input.trim();
+    if(!txt&&!imgData&&!(tab==="archivos"&&attached)) return;
+    if(loading) return;
+    const um={role:"user",text:txt,img:imgPrev,...(tab==="archivos"&&attached?{fd:attached.data,ft:attached.type,fn:attached.name,fm:attached.mime}:{})};
+    setChats(c=>({...c,[tab]:[...c[tab],um]}));
+    setInput(""); setImgData(null); setImgPrev(null);
+    if(tab==="archivos") setAttached(null);
+    setLoading(true);
+    const hist=[...chats[tab],um];
+    const apiMsgs=hist.map(m=>{
+      if(m.role==="user"){
+        const c=[];
+        if(m.img) c.push({type:"image",source:{type:"base64",media_type:"image/jpeg",data:m.img.split(",")[1]||m.img}});
+        if(m.fd){
+          if(m.ft==="image") c.push({type:"image",source:{type:"base64",media_type:m.fm||"image/jpeg",data:m.fd}});
+          else if(m.ft==="pdf") c.push({type:"document",source:{type:"base64",media_type:"application/pdf",data:m.fd}});
+          else c.push({type:"text",text:`[Archivo: ${m.fn}]\n${atob(m.fd).substring(0,3000)}`});
+        }
+        if(m.text) c.push({type:"text",text:m.text});
+        return {role:"user",content:c.length===1&&!m.img&&!m.fd?m.text:c};
+      }
+      return {role:"assistant",content:m.text};
+    });
+    try{
+      const r=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:PROMPTS[tab],messages:apiMsgs})
+      });
+      const d=await r.json();
+      setChats(c=>({...c,[tab]:[...c[tab],{role:"assistant",text:d.content?.[0]?.text||"Sin respuesta."}]}));
+    }catch{
+      setChats(c=>({...c,[tab]:[...c[tab],{role:"assistant",text:"Error de conexión."}]}));
+    }
+    setLoading(false);
+  };
+
+  const hKey=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}};
+
+  // ── SETTINGS ──
+  if(screen==="settings") return (
+    <div style={{display:"flex",flexDirection:"column",height:"100vh",fontFamily:"system-ui,sans-serif",background:"#fff",maxWidth:480,margin:"0 auto"}}>
+      <div style={{padding:"12px 16px",borderBottom:"1px solid #eee",display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
+        <button onClick={()=>setScreen("chat")} style={{background:"none",border:"none",fontSize:22,cursor:"pointer",color:"#888"}}>‹</button>
+        <div style={{fontSize:13,fontWeight:700}}>Configuración institucional</div>
+      </div>
+      <div style={{flex:1,overflowY:"auto",padding:"20px 16px",display:"flex",flexDirection:"column",gap:18}}>
+        <div>
+          <div style={{fontSize:12,fontWeight:700,color:"#555",marginBottom:10}}>Logo de la escuela</div>
+          <div style={{display:"flex",alignItems:"center",gap:14}}>
+            <div onClick={()=>logoRef.current?.click()} style={{width:80,height:80,borderRadius:10,border:"1px dashed #ccc",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",overflow:"hidden",background:"#f8f8f8",flexShrink:0,fontSize:28}}>
+              {logo?<img src={logo} style={{width:"100%",height:"100%",objectFit:"contain"}} alt=""/>:"🖼️"}
+            </div>
+            <div>
+              <p style={{fontSize:12,color:"#666",lineHeight:1.5,marginBottom:8}}>El logo se incluye en todos los documentos Word y PDF.</p>
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={()=>logoRef.current?.click()} style={{padding:"6px 14px",background:"#f0f0f0",border:"1px solid #ddd",borderRadius:8,fontSize:12,cursor:"pointer"}}>{logo?"Cambiar":"Subir logo"}</button>
+                {logo&&<button onClick={()=>setLogo(null)} style={{padding:"6px 14px",background:"none",border:"1px solid #ffcccc",borderRadius:8,fontSize:12,cursor:"pointer",color:"#A32D2D"}}>Quitar</button>}
+              </div>
+            </div>
+          </div>
+          <input ref={logoRef} type="file" accept="image/*" onChange={handleLogo} style={{display:"none"}}/>
+        </div>
+        <div>
+          <label style={{fontSize:12,fontWeight:700,color:"#555",display:"block",marginBottom:8}}>Nombre de la escuela</label>
+          <input value={school} onChange={e=>setSchool(e.target.value)} placeholder="Ej: E.E.S. N° 23 — San Miguel"
+            style={{width:"100%",padding:"10px 12px",border:"1px solid #ddd",borderRadius:10,fontSize:13,outline:"none",fontFamily:"inherit"}}/>
+        </div>
+        {(logo||school)&&(
+          <div style={{padding:16,background:"#f8f8f8",border:"1px solid #eee",borderRadius:10,textAlign:"center"}}>
+            {logo&&<img src={logo} style={{height:46,objectFit:"contain",marginBottom:8,display:"block",margin:"0 auto 8px"}} alt=""/>}
+            {school&&<div style={{fontSize:13,fontWeight:700}}>{school}</div>}
+          </div>
+        )}
+        <button onClick={()=>setScreen("chat")} style={{padding:14,background:"#185FA5",color:"#fff",border:"none",borderRadius:12,fontSize:13,fontWeight:700,cursor:"pointer"}}>Guardar y volver</button>
+      </div>
+    </div>
+  );
+
+  // ── MAIN CHAT ──
+  return (
+    <div style={{display:"flex",flexDirection:"column",height:"100vh",fontFamily:"system-ui,sans-serif",background:"#fff",maxWidth:480,margin:"0 auto"}}>
+
+      {/* Header */}
+      <div style={{padding:"9px 14px",borderBottom:"1px solid #eee",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          {logo&&<img src={logo} style={{height:26,objectFit:"contain",borderRadius:4}} alt=""/>}
+          <div>
+            <div style={{fontSize:12,fontWeight:700,color:ac}}>{school||"Asistente de Conducción Escolar"}</div>
+            <div style={{fontSize:10,color:"#888"}}>Secundaria · Prov. Buenos Aires</div>
+          </div>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <button onClick={()=>setScreen("settings")} style={{background:"none",border:"1px solid #eee",borderRadius:8,padding:"4px 8px",cursor:"pointer",fontSize:11,color:logo?"#0F6E56":"#888",display:"flex",alignItems:"center",gap:3}}>
+            🏫 {logo?"Logo ✓":"Logo"}
+          </button>
+          {msgs.length>0&&<button onClick={()=>setChats(c=>({...c,[tab]:[]}))} style={{background:"none",border:"none",cursor:"pointer",fontSize:11,color:"#bbb"}}>Limpiar</button>}
+        </div>
+      </div>
+
+      {/* Role picker — equipo tab */}
+      {tab==="equipo"&&(
+        <div style={{padding:"6px 12px",borderBottom:"1px solid #eee",overflowX:"auto",display:"flex",gap:6,scrollbarWidth:"none",flexShrink:0}}>
+          {ROLES.map(r=>(
+            <button key={r.id} onClick={()=>setRole(role===r.id?null:r.id)}
+              style={{flexShrink:0,padding:"3px 10px",borderRadius:20,fontSize:11,cursor:"pointer",border:"1px solid",
+                borderColor:role===r.id?ac:"#eee",background:role===r.id?ac+"18":"#f8f8f8",
+                color:role===r.id?ac:"#888",fontWeight:role===r.id?700:400,fontFamily:"inherit"}}>
+              {r.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Messages */}
+      <div style={{flex:1,overflowY:"auto",padding:"12px 16px",display:"flex",flexDirection:"column",gap:10}}>
+        {msgs.length===0&&(
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12,marginTop:16}}>
+            <div style={{width:44,height:44,borderRadius:"50%",background:ac+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>
+              {TABS.find(t=>t.id===tab)?.icon}
+            </div>
+            <div style={{fontSize:14,fontWeight:700,color:"#1c1c1c"}}>{TABS.find(t=>t.id===tab)?.label}</div>
+            <div style={{fontSize:12,color:"#888",textAlign:"center",maxWidth:280,lineHeight:1.5}}>
+              {tab==="consultas"&&"Normativa DGCyE completa. Todas las respuestas incluyen corresponsabilidad."}
+              {tab==="escritos"&&"Generá documentos con encuadre normativo."}
+              {tab==="conflictos"&&"Describí la situación. Incluye protocolo de viralización y riesgo."}
+              {tab==="criterio"&&"Dilemas éticos y decisiones difíciles de conducción."}
+              {tab==="archivos"&&"Subí imágenes, PDFs o documentos para analizar o corregir."}
+              {tab==="equipo"&&"Consultá sobre cualquier actor del equipo, incluyendo CITE y EDTE."}
+              {tab==="estudiantes"&&"Trayectorias, convivencia, derechos y situaciones de vulnerabilidad."}
+            </div>
+            {tab==="archivos"?(
+              <button onClick={()=>attRef.current?.click()}
+                style={{display:"flex",alignItems:"center",gap:8,padding:"12px 20px",borderRadius:10,cursor:"pointer",color:ac,border:`1px solid ${ac}40`,background:ac+"08",fontSize:13,fontFamily:"inherit"}}>
+                📎 Adjuntá un archivo o foto
+              </button>
+            ):(
+              <div style={{display:"flex",flexDirection:"column",gap:8,width:"100%",marginTop:4}}>
+                {STARTERS[tab].map((s,i)=>(
+                  <button key={i} onClick={()=>{setInput(s);txtRef.current?.focus();}}
+                    style={{textAlign:"left",padding:"9px 13px",background:"#f8f8f8",border:"1px solid #eee",borderRadius:10,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:"#1c1c1c"}}>
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {msgs.map((m,i)=>(
+          <div key={i} style={{display:"flex",flexDirection:"column",alignItems:m.role==="user"?"flex-end":"flex-start",gap:4}}>
+            {m.img&&<img src={m.img} style={{maxWidth:180,borderRadius:10,border:"1px solid #eee"}} alt=""/>}
+            {m.fd&&m.ft==="image"&&<img src={`data:${m.fm};base64,${m.fd}`} style={{maxWidth:200,borderRadius:10,border:"1px solid #eee"}} alt=""/>}
+            {m.fd&&m.ft!=="image"&&(
+              <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",background:"#f0f0f0",borderRadius:10,maxWidth:200,fontSize:11,color:"#666"}}>
+                📄 <span style={{wordBreak:"break-all"}}>{m.fn}</span>
+              </div>
+            )}
+            {m.text&&(
+              <div style={{maxWidth:"85%",padding:"9px 13px",borderRadius:14,fontSize:13,lineHeight:1.6,
+                background:m.role==="user"?ac:"#f2f4f7",color:m.role==="user"?"#fff":"#1c1c1c",
+                whiteSpace:"pre-wrap",wordBreak:"break-word"}}>
+                {m.text}
+              </div>
+            )}
+          </div>
+        ))}
+        {loading&&<Dots/>}
+        <div ref={bottomRef}/>
+      </div>
+
+      {/* Preview bar */}
+      {(imgPrev||attached)&&(
+        <div style={{padding:"7px 14px",display:"flex",alignItems:"center",gap:10,borderTop:"1px solid #eee",background:"#fafafa",flexShrink:0}}>
+          {imgPrev&&<img src={imgPrev} style={{width:40,height:40,objectFit:"cover",borderRadius:8}} alt=""/>}
+          {attached?.prev&&<img src={attached.prev} style={{width:40,height:40,objectFit:"cover",borderRadius:8}} alt=""/>}
+          {attached&&!attached.prev&&<div style={{width:40,height:40,borderRadius:8,background:ac+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>📄</div>}
+          <span style={{fontSize:12,color:"#666",flex:1,wordBreak:"break-all"}}>{imgPrev?"Foto adjunta":attached?.name}</span>
+          <button onClick={()=>{setImgData(null);setImgPrev(null);setAttached(null);}} style={{background:"none",border:"none",cursor:"pointer",fontSize:20,color:"#bbb"}}>×</button>
+        </div>
+      )}
+
+      {/* Input */}
+      <div style={{padding:"9px 11px",borderTop:"1px solid #eee",display:"flex",gap:7,alignItems:"flex-end",flexShrink:0}}>
+        <button onClick={()=>tab==="archivos"?attRef.current?.click():camRef.current?.click()}
+          style={{background:"#fff",border:`1px solid ${attached?ac:"#ddd"}`,borderRadius:8,padding:8,cursor:"pointer",flexShrink:0,fontSize:18,lineHeight:1}}>
+          {tab==="archivos"?"📎":"📷"}
+        </button>
+        <input ref={camRef} type="file" accept="image/*" capture="environment" onChange={handleImg} style={{display:"none"}}/>
+        <input ref={attRef} type="file" accept="image/*,.pdf,.txt,.doc,.docx" onChange={handleAttach} style={{display:"none"}}/>
+        <textarea ref={txtRef} value={input} onChange={e=>setInput(e.target.value)}
+          onKeyDown={hKey} rows={1} placeholder={tab==="archivos"?"Adjuntá un archivo y/o escribí...":"Escribí tu consulta..."}
+          style={{flex:1,resize:"none",border:"1px solid #ddd",borderRadius:8,padding:"8px 11px",fontSize:13,lineHeight:1.4,outline:"none",background:"#fafafa",maxHeight:100,overflowY:"auto",fontFamily:"inherit"}}
+          onInput={e=>{e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,100)+"px";}}/>
+        <button onClick={send} disabled={loading||(!input.trim()&&!imgData&&!(tab==="archivos"&&attached))}
+          style={{background:ac,border:"none",borderRadius:8,padding:"9px 13px",cursor:"pointer",flexShrink:0,fontSize:16,lineHeight:1,
+            opacity:(loading||(!input.trim()&&!imgData&&!(tab==="archivos"&&attached)))?.4:1}}>
+          ➤
+        </button>
+      </div>
+
+      {/* Bottom nav */}
+      <div style={{display:"flex",borderTop:"1px solid #eee",background:"#fff",flexShrink:0}}>
+        {TABS.map(t=>(
+          <button key={t.id} onClick={()=>setTab(t.id)}
+            style={{flex:1,padding:"7px 1px 5px",background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+            <span style={{fontSize:18}}>{t.icon}</span>
+            <span style={{fontSize:8,color:tab===t.id?COLORS[t.id]:"#bbb",fontWeight:tab===t.id?700:400}}>{t.label}</span>
+            {tab===t.id&&<div style={{width:16,height:2,borderRadius:1,background:COLORS[t.id]}}/>}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
