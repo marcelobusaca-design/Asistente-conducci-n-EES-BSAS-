@@ -27,7 +27,8 @@ const { useState, useRef, useEffect } = React;
 
 const COLORS = {
   consultas:"#185FA5", escritos:"#0F6E56", conflictos:"#BA7517",
-  criterio:"#7C3AED", archivos:"#533AB7", equipo:"#3B6D11", estudiantes:"#993C1D"
+  criterio:"#7C3AED", archivos:"#533AB7", equipo:"#3B6D11", estudiantes:"#993C1D",
+  planif:"#1A6B8A"
 };
 
 const TABS = [
@@ -38,6 +39,7 @@ const TABS = [
   { id:"archivos",    label:"Archivos",   icon:"📎" },
   { id:"equipo",      label:"Equipo",     icon:"👥" },
   { id:"estudiantes", label:"Alumnos",    icon:"🎒" },
+  { id:"planif",      label:"Planif.",    icon:"📅" },
 ];
 
 const ROLES = [
@@ -72,6 +74,7 @@ const PROMPTS = {
   archivos:    BASE + "\nAnalizás documentos, actas, fotos. Revisás errores, identificás normativa aplicable, sugerís correcciones y mejoras.",
   equipo:      BASE + "\nEspecialidad en roles: Director/a, Vicedirector/a, Secretaría, Jefe Preceptores, Preceptores/as, EOE, CITE (Res.1884/25 — cargo docente individual), EDTE (órgano colegiado), Auxiliares (Ley 10430 — CONSEJO ESCOLAR — LEVE PROBANZA), Cooperadora.",
   estudiantes: BASE + "\nEspecialidad en: trayectorias RITE (TEA/TEP/TED), FORTE, CITE, AIC y convivencia, Centro de Estudiantes (Ley 14581/26877), ESI (Ley 26150), embarazo/maternidad/IVE, discapacidad y PPI, mapa de riesgo y vulneración de derechos.",
+  planif:      BASE + "\nEspecialidad en planificación docente para EES Buenos Aires. Asistís en: Proyecto Curricular de la Planificación (PCP) incluyendo efemérides y fechas conmemorativas del calendario escolar, Planificación Anual Docente (estructura, fundamentación, propósitos, contenidos por unidad/bloque, secuenciación didáctica, bibliografía), Plan de Evaluación (criterios de evaluación, instrumentos, modalidades, momentos: diagnóstica, formativa, sumativa), coherencia con Diseño Curricular DGCyE nivel secundario. Cuando generás una planificación, pedí: materia, año/ciclo, docente, y si quiere incluir efemérides relevantes. El plan de evaluación debe incluir: criterios claros y observables, instrumentos variados (prueba escrita, oral, trabajo práctico, portfolio, autoevaluación), ponderación sugerida, articulación con nota mínima 7 y régimen de intensificación (hasta 5 materias). Generás documentos exportables en Word. Lenguaje docente profesional, alineado al diseño curricular vigente.",
 };
 
 const STARTERS = {
@@ -82,6 +85,7 @@ const STARTERS = {
   archivos:    ["Subí un acta para revisar","Analizá este documento","Corregí errores normativos en este texto"],
   equipo:      ["¿Cómo instruyo una leve probanza?","¿Qué hace el EDTE?","Funciones del jefe de preceptores"],
   estudiantes: ["¿Qué pasa si un alumno llega a TED?","Derechos del Centro de Estudiantes","Alumno con conductas autolesivas"],
+  planif:      ["Generá una planificación anual docente con efemérides","Creá un plan de evaluación con criterios para el año","¿Qué debe incluir el PCP en relación a las efemérides?"],
 };
 
 function Dots() {
@@ -117,7 +121,7 @@ function App() {
   const [apiKey, setApiKey] = useState(()=>localStorage.getItem('anthropic_key')||'');
   const [tab, setTab]         = useState("consultas");
   const [screen, setScreen]   = useState("chat");
-  const [chats, setChats]     = useState({consultas:[],escritos:[],conflictos:[],criterio:[],archivos:[],equipo:[],estudiantes:[]});
+  const [chats, setChats]     = useState({consultas:[],escritos:[],conflictos:[],criterio:[],archivos:[],equipo:[],estudiantes:[],planif:[]});
   const [input, setInput]     = useState("");
   const [loading, setLoading] = useState(false);
   const [imgPrev, setImgPrev] = useState(null);
@@ -290,6 +294,7 @@ function App() {
           tab==="criterio"?"Dilemas éticos y decisiones difíciles de conducción.":
           tab==="archivos"?"Subí imágenes o PDFs para analizar y corregir.":
           tab==="equipo"?"Consultá sobre cualquier actor del equipo.":
+          tab==="planif"?"PCP, efemérides, planificación anual y plan de evaluación con criterios.":
           "Trayectorias, convivencia, derechos y vulnerabilidad."
         ),
         tab==="archivos"
@@ -310,7 +315,7 @@ function App() {
         ),
         m.text && React.createElement('div', {style:{maxWidth:"85%",padding:"9px 13px",borderRadius:14,fontSize:13,lineHeight:1.6,
           background:m.role==="user"?ac:"#f2f4f7",color:m.role==="user"?"#fff":"#1c1c1c",whiteSpace:"pre-wrap",wordBreak:"break-word"}}, m.text),
-        m.role==="assistant" && tab==="escritos" && React.createElement('div', {style:{display:"flex",gap:6}},
+        m.role==="assistant" && (tab==="escritos"||tab==="planif") && React.createElement('div', {style:{display:"flex",gap:6}},
           React.createElement('button', {onClick:()=>exportWord(m.text),style:{display:"flex",alignItems:"center",gap:4,padding:"4px 10px",background:"#fff",border:"1px solid #ddd",borderRadius:8,cursor:"pointer",fontSize:11,color:"#666"}}, "📄 Word")
         )
       )),
