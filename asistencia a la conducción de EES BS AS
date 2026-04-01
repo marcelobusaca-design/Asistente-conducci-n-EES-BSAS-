@@ -101,6 +101,11 @@ PLAN DE EVALUACIÓN:
 - Comunicación a familias y estudiantes (transparencia evaluativa).
 - Intensificación: hasta 5 materias (FORTE, Res.2624/25).
 
+AGENDA INTEGRADA (cuando te piden "agenda del miércoles" o combinación de documentos):
+- Generás en un solo documento: 1) PCP con efemérides integradas en las unidades, 2) Planificación Anual Docente completa, 3) Plan de Evaluación con criterios observables.
+- Pedí los datos necesarios al principio: materia, curso, año, turno, docente. Si no los tienen, usás datos de ejemplo.
+- Formato listo para imprimir, encabezado institucional, índice o separadores claros entre secciones.
+
 Cuando te piden generar documentos los hacés completos, listos para imprimir. Pedí los datos que necesitás (materia, curso, año, turno, docente). Formato institucional DGCyE.`,
 };
 
@@ -112,7 +117,7 @@ const STARTERS = {
   archivos:    ["Subí un acta para revisar","Analizá este documento","Corregí errores normativos en este texto"],
   equipo:      ["¿Cómo instruyo una leve probanza?","¿Qué hace el EDTE?","Funciones del jefe de preceptores"],
   estudiantes: ["¿Qué pasa si un alumno llega a TED?","Derechos del Centro de Estudiantes","Alumno con conductas autolesivas"],
-  docente:     ["Generá una planificación anual completa","Hacé un PCP con efemérides integradas","Creá un plan de evaluación con criterios"],
+  docente:     ["Armá la agenda del miércoles: PCP con efemérides, planificación anual y plan de evaluación con criterios","Hacé un PCP con efemérides integradas","Generá una planificación anual completa","Creá un plan de evaluación con criterios"],
 };
 
 function Dots() {
@@ -321,7 +326,7 @@ function App() {
           tab==="criterio"?"Dilemas éticos y decisiones difíciles de conducción.":
           tab==="archivos"?"Subí imágenes o PDFs para analizar y corregir.":
           tab==="equipo"?"Consultá sobre cualquier actor del equipo.":
-          tab==="docente"?"PCP con efemérides, planificación anual y plan de evaluación con criterios.":
+          tab==="docente"?"Agenda del miércoles: PCP con efemérides, planificación anual docente y plan de evaluación con criterios.":
           "Trayectorias, convivencia, derechos y vulnerabilidad."
         ),
         tab==="archivos"
