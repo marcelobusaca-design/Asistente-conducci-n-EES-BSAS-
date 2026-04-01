@@ -27,7 +27,8 @@ const { useState, useRef, useEffect } = React;
 
 const COLORS = {
   consultas:"#185FA5", escritos:"#0F6E56", conflictos:"#BA7517",
-  criterio:"#7C3AED", archivos:"#533AB7", equipo:"#3B6D11", estudiantes:"#993C1D"
+  criterio:"#7C3AED", archivos:"#533AB7", equipo:"#3B6D11", estudiantes:"#993C1D",
+  docente:"#B5460A"
 };
 
 const TABS = [
@@ -38,6 +39,7 @@ const TABS = [
   { id:"archivos",    label:"Archivos",   icon:"📎" },
   { id:"equipo",      label:"Equipo",     icon:"👥" },
   { id:"estudiantes", label:"Alumnos",    icon:"🎒" },
+  { id:"docente",     label:"Docente",    icon:"📋" },
 ];
 
 const ROLES = [
@@ -72,6 +74,34 @@ const PROMPTS = {
   archivos:    BASE + "\nAnalizás documentos, actas, fotos. Revisás errores, identificás normativa aplicable, sugerís correcciones y mejoras.",
   equipo:      BASE + "\nEspecialidad en roles: Director/a, Vicedirector/a, Secretaría, Jefe Preceptores, Preceptores/as, EOE, CITE (Res.1884/25 — cargo docente individual), EDTE (órgano colegiado), Auxiliares (Ley 10430 — CONSEJO ESCOLAR — LEVE PROBANZA), Cooperadora.",
   estudiantes: BASE + "\nEspecialidad en: trayectorias RITE (TEA/TEP/TED), FORTE, CITE, AIC y convivencia, Centro de Estudiantes (Ley 14581/26877), ESI (Ley 26150), embarazo/maternidad/IVE, discapacidad y PPI, mapa de riesgo y vulneración de derechos.",
+  docente:     BASE + `\nEspecialidad en PLANIFICACIÓN DOCENTE para escuelas secundarias de Buenos Aires. Ayudás a construir:
+
+PCP (PLANIFICACIÓN CURRICULAR PEDAGÓGICA):
+- Estructura: fundamentación, propósitos, contenidos organizados por unidades o bloques, estrategias metodológicas, recursos, bibliografía.
+- EFEMÉRIDES: integrás las fechas conmemorativas del calendario escolar bonaerense en las unidades didácticas como oportunidades de enseñanza transversal. Efemérides clave 2026: 24 de marzo (Día de la Memoria), 2 de abril (Malvinas), 1° de mayo (Día del Trabajador/a), 25 de mayo (Revolución de Mayo), 20 de junio (Bandera), 9 de julio (Independencia), 26 de julio (Muerte de Eva Perón), 17 de agosto (San Martín), 11 de septiembre (Maestros/as - Sarmiento), 12 de octubre (Diversidad Cultural), 20 de noviembre (Día de la Soberanía/Derechos del Niño).
+- Articulación con el DC (Diseño Curricular) jurisdiccional y los NAP.
+- Organización en cuatrimestres (1° cuatrimestre: marzo-julio, 2° cuatrimestre: agosto-diciembre).
+
+PLANIFICACIÓN ANUAL DOCENTE:
+- Encabezado completo: escuela, año, materia, curso, docente, turno, ciclo lectivo.
+- Diagnóstico inicial del grupo.
+- Propósitos del docente y objetivos de aprendizaje.
+- Contenidos secuenciados por unidad/bloque/cuatrimestre.
+- Estrategias metodológicas y recursos.
+- Cronograma tentativo articulado con el CAD 2026 (190 días, inicio 2 marzo, receso 20-31 julio, cierre 22 diciembre).
+- Bibliografía docente y para estudiantes.
+- Firma y fecha.
+
+PLAN DE EVALUACIÓN:
+- Marco normativo: la evaluación como proceso continuo, formativo e integral (Res.587/11 y DC jurisdiccional).
+- CRITERIOS DE EVALUACIÓN: definís criterios claros, observables y comunicables. Ejemplos por tipo: participación en clase, producción escrita, oralidad, trabajo en equipo, resolución de problemas, comprensión lectora, pensamiento crítico.
+- Instrumentos de evaluación: exámenes escritos, portafolios, trabajos prácticos, exposiciones orales, proyectos, rúbricas, listas de cotejo, autoevaluación, coevaluación.
+- Nota mínima de acreditación: 7 (siete). Los cuatrimestres NO se promedian.
+- Criterios de acreditación y promoción.
+- Comunicación a familias y estudiantes (transparencia evaluativa).
+- Intensificación: hasta 5 materias (FORTE, Res.2624/25).
+
+Cuando te piden generar documentos los hacés completos, listos para imprimir. Pedí los datos que necesitás (materia, curso, año, turno, docente). Formato institucional DGCyE.`,
 };
 
 const STARTERS = {
@@ -82,6 +112,7 @@ const STARTERS = {
   archivos:    ["Subí un acta para revisar","Analizá este documento","Corregí errores normativos en este texto"],
   equipo:      ["¿Cómo instruyo una leve probanza?","¿Qué hace el EDTE?","Funciones del jefe de preceptores"],
   estudiantes: ["¿Qué pasa si un alumno llega a TED?","Derechos del Centro de Estudiantes","Alumno con conductas autolesivas"],
+  docente:     ["Generá una planificación anual completa","Hacé un PCP con efemérides integradas","Creá un plan de evaluación con criterios"],
 };
 
 function Dots() {
@@ -117,7 +148,7 @@ function App() {
   const [apiKey, setApiKey] = useState(()=>localStorage.getItem('anthropic_key')||'');
   const [tab, setTab]         = useState("consultas");
   const [screen, setScreen]   = useState("chat");
-  const [chats, setChats]     = useState({consultas:[],escritos:[],conflictos:[],criterio:[],archivos:[],equipo:[],estudiantes:[]});
+  const [chats, setChats]     = useState({consultas:[],escritos:[],conflictos:[],criterio:[],archivos:[],equipo:[],estudiantes:[],docente:[]});
   const [input, setInput]     = useState("");
   const [loading, setLoading] = useState(false);
   const [imgPrev, setImgPrev] = useState(null);
@@ -290,6 +321,7 @@ function App() {
           tab==="criterio"?"Dilemas éticos y decisiones difíciles de conducción.":
           tab==="archivos"?"Subí imágenes o PDFs para analizar y corregir.":
           tab==="equipo"?"Consultá sobre cualquier actor del equipo.":
+          tab==="docente"?"PCP con efemérides, planificación anual y plan de evaluación con criterios.":
           "Trayectorias, convivencia, derechos y vulnerabilidad."
         ),
         tab==="archivos"
@@ -310,7 +342,7 @@ function App() {
         ),
         m.text && React.createElement('div', {style:{maxWidth:"85%",padding:"9px 13px",borderRadius:14,fontSize:13,lineHeight:1.6,
           background:m.role==="user"?ac:"#f2f4f7",color:m.role==="user"?"#fff":"#1c1c1c",whiteSpace:"pre-wrap",wordBreak:"break-word"}}, m.text),
-        m.role==="assistant" && tab==="escritos" && React.createElement('div', {style:{display:"flex",gap:6}},
+        m.role==="assistant" && (tab==="escritos"||tab==="docente") && React.createElement('div', {style:{display:"flex",gap:6}},
           React.createElement('button', {onClick:()=>exportWord(m.text),style:{display:"flex",alignItems:"center",gap:4,padding:"4px 10px",background:"#fff",border:"1px solid #ddd",borderRadius:8,cursor:"pointer",fontSize:11,color:"#666"}}, "📄 Word")
         )
       )),
