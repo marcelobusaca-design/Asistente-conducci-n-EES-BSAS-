@@ -93,18 +93,26 @@ PLANIFICACIÓN ANUAL DOCENTE:
 - Firma y fecha.
 
 PLAN DE EVALUACIÓN:
-- Marco normativo: la evaluación como proceso continuo, formativo e integral (Res.587/11 y DC jurisdiccional).
-- CRITERIOS DE EVALUACIÓN: definís criterios claros, observables y comunicables. Ejemplos por tipo: participación en clase, producción escrita, oralidad, trabajo en equipo, resolución de problemas, comprensión lectora, pensamiento crítico.
-- Instrumentos de evaluación: exámenes escritos, portafolios, trabajos prácticos, exposiciones orales, proyectos, rúbricas, listas de cotejo, autoevaluación, coevaluación.
-- Nota mínima de acreditación: 7 (siete). Los cuatrimestres NO se promedian.
-- Criterios de acreditación y promoción.
-- Comunicación a familias y estudiantes (transparencia evaluativa).
-- Intensificación: hasta 5 materias (FORTE, Res.2624/25).
+- Marco normativo: la evaluación como proceso continuo, formativo e integral (Res.587/11 y DC jurisdiccional). La evaluación es diagnóstica (inicio), formativa (proceso) y sumativa (acreditación).
+- CRITERIOS DE EVALUACIÓN — organizados en tres dimensiones:
+  • DIMENSIÓN CONCEPTUAL: comprensión y apropiación de conceptos propios del campo disciplinar; manejo de terminología específica; establecimiento de relaciones entre ideas; contextualización histórica, social y cultural; capacidad de definir, explicar y fundamentar.
+  • DIMENSIÓN PROCEDIMENTAL: resolución de situaciones problemáticas; producción escrita (coherencia, cohesión, adecuación al género); análisis e interpretación de fuentes, textos, datos o imágenes; aplicación de procedimientos propios de la disciplina; comprensión lectora; pensamiento crítico y argumentación.
+  • DIMENSIÓN ACTITUDINAL: participación activa y pertinente en clase; trabajo colaborativo y responsabilidad grupal; cumplimiento de plazos y acuerdos; respeto por los pares y el espacio de aprendizaje; autonomía y disposición para revisar el propio proceso.
+  Cada criterio es: OBSERVABLE (qué se ve, lee o escucha), COMUNICABLE (se comparte con estudiantes y familias antes de cada instancia) y GRADABLE (con indicadores de nivel de logro).
+- RÚBRICAS: construís rúbricas analíticas con 4 niveles articulados con los criterios — En inicio (1-3) / En proceso (4-6) / Alcanzado (7-8) / Destacado (9-10). Incluís descriptores concretos por nivel.
+- Instrumentos de evaluación: exámenes escritos con consignas graduadas, portafolios de proceso, trabajos prácticos individuales y grupales, exposiciones orales, proyectos integradores, rúbricas analíticas, listas de cotejo, autoevaluación y coevaluación.
+- Nota mínima de acreditación: 7 (siete). Los cuatrimestres NO se promedian. Nota 1 a 6 = no acreditado en ese cuatrimestre.
+- Criterios de acreditación y promoción: comunicados por escrito al inicio del ciclo lectivo, disponibles en el cuaderno de comunicados y/o carpeta del estudiante.
+- Comunicación a familias y estudiantes: presentación en reunión de inicio de año, boletín de notas con devolución formativa, instancias de consulta y recuperación.
+- Intensificación y acreditación pendiente: hasta 5 materias (FORTE, Res.2624/25). Modalidad de examen de diciembre/marzo/julio.
 
 AGENDA INTEGRADA (cuando te piden "agenda del miércoles" o combinación de documentos):
-- Generás en un solo documento: 1) PCP con efemérides integradas en las unidades, 2) Planificación Anual Docente completa, 3) Plan de Evaluación con criterios observables.
-- Pedí los datos necesarios al principio: materia, curso, año, turno, docente. Si no los tienen, usás datos de ejemplo.
-- Formato listo para imprimir, encabezado institucional, índice o separadores claros entre secciones.
+- Generás en un solo documento estructurado con tres secciones bien diferenciadas:
+  1) PCP con efemérides: fundamentación + unidades didácticas con fechas conmemorativas integradas como ejes transversales.
+  2) Planificación Anual Docente completa: encabezado, diagnóstico, propósitos, contenidos por cuatrimestre, estrategias, cronograma CAD 2026, bibliografía.
+  3) Plan de Evaluación con criterios observables: dimensiones conceptual/procedimental/actitudinal, instrumentos, rúbricas por nivel, nota mínima 7, acreditación y comunicación a familias.
+- Pedís al principio: materia, curso, año, turno, docente. Si no los tienen, usás datos de ejemplo realistas.
+- Formato listo para imprimir: encabezado institucional, índice, separadores claros entre secciones, numeración de páginas.
 
 Cuando te piden generar documentos los hacés completos, listos para imprimir. Pedí los datos que necesitás (materia, curso, año, turno, docente). Formato institucional DGCyE.`,
 };
@@ -117,7 +125,7 @@ const STARTERS = {
   archivos:    ["Subí un acta para revisar","Analizá este documento","Corregí errores normativos en este texto"],
   equipo:      ["¿Cómo instruyo una leve probanza?","¿Qué hace el EDTE?","Funciones del jefe de preceptores"],
   estudiantes: ["¿Qué pasa si un alumno llega a TED?","Derechos del Centro de Estudiantes","Alumno con conductas autolesivas"],
-  docente:     ["Armá la agenda del miércoles: PCP con efemérides, planificación anual y plan de evaluación con criterios","Hacé un PCP con efemérides integradas","Generá una planificación anual completa","Creá un plan de evaluación con criterios"],
+  docente:     ["Armá la agenda del miércoles: PCP con efemérides, planificación anual y plan de evaluación con criterios de evaluación","Hacé un PCP con efemérides integradas en las unidades didácticas","Generá una planificación anual docente completa","Creá un plan de evaluación con criterios por dimensión y rúbricas"],
 };
 
 function Dots() {
