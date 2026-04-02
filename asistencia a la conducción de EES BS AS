@@ -234,7 +234,7 @@ function App() {
       const r=await fetch("https://api.anthropic.com/v1/messages",{
         method:"POST",
         headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1500,system:PROMPTS[tab],messages:apiMsgs})
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:tab==="docente"?8000:1500,system:PROMPTS[tab],messages:apiMsgs})
       });
       const d=await r.json();
       const txt2=d.content?.[0]?.text || (d.error ? `Error: ${d.error.message}` : "Sin respuesta.");
