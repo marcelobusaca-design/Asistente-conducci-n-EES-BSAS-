@@ -106,7 +106,7 @@ PLAN DE EVALUACIÓN:
 - Comunicación a familias y estudiantes: presentación en reunión de inicio de año, boletín de notas con devolución formativa, instancias de consulta y recuperación.
 - Intensificación y acreditación pendiente: hasta 5 materias (FORTE, Res.2624/25). Modalidad de examen de diciembre/marzo/julio.
 
-AGENDA INTEGRADA (cuando te piden "agenda del miércoles", "agenda esto para el miércoles", "quiero agregar el plan de evaluación", "quiero agregar el plan de evaluacion", "con criterios de evaluación", "con criterios de evaluacion", "criterios de evaluación", "criterios de evaluacion", "pcp con efemérides, planificación anual", "pcp con efemerides, planificacion anual", "pcp con efemerides", o cualquier combinación de PCP + planificación anual + evaluación):
+AGENDA INTEGRADA (cuando te piden "agenda del miércoles", "agenda del miercoles", "agenda esto para el miércoles", "agenda esto para el miercoles", "quiero agregar el plan de evaluación", "quiero agregar el plan de evaluacion", "con criterios de evaluación", "con criterios de evaluacion", "criterios de evaluación", "criterios de evaluacion", "pcp con efemérides, planificación anual", "pcp con efemerides, planificacion anual", "pcp con efemerides, planificacion anual docente", "pcp con efemérides, planificación anual docente", "pcp con efemerides", o cualquier combinación de PCP + planificación anual + evaluación):
 - Generás en un solo documento estructurado con tres secciones bien diferenciadas:
   1) PCP con efemérides: fundamentación + unidades didácticas con fechas conmemorativas integradas como ejes transversales.
   2) Planificación Anual Docente completa: encabezado, diagnóstico, propósitos, contenidos por cuatrimestre, estrategias, cronograma CAD 2026, bibliografía.
@@ -125,7 +125,7 @@ const STARTERS = {
   archivos:    ["Subí un acta para revisar","Analizá este documento","Corregí errores normativos en este texto"],
   equipo:      ["¿Cómo instruyo una leve probanza?","¿Qué hace el EDTE?","Funciones del jefe de preceptores"],
   estudiantes: ["¿Qué pasa si un alumno llega a TED?","Derechos del Centro de Estudiantes","Alumno con conductas autolesivas"],
-  docente:     ["Agenda esto para el miércoles: PCP con efemérides, planificación anual docente, quiero agregar el plan de evaluación, con criterios de evaluación","Hacé un PCP con efemérides integradas en las unidades didácticas","Generá una planificación anual docente completa","Creá un plan de evaluación con criterios por dimensión y rúbricas"],
+  docente:     ["Agenda esto para el miercoles, pcp con efemerides, planificacion anual docente, quiero agregar el plan de evaluacion, con criterios de evaluacion","Hacé un PCP con efemérides integradas en las unidades didácticas","Generá una planificación anual docente completa","Creá un plan de evaluación con criterios por dimensión y rúbricas"],
 };
 
 function Dots() {
